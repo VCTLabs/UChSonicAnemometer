@@ -47,4 +47,4 @@ def generate_timeframe(signal, angular_frecuency, sampling_rate):
     
   start = scipy.optimize.newton(f, start, fprime=fprime)
   
-  return np.arange(-start, -start+1.0*signal.size/sampling_rate, 1.0/sampling_rate)
+  return np.arange(-start, -start+1.0*signal.size/sampling_rate, 1.0/sampling_rate)[0:signal.size]
