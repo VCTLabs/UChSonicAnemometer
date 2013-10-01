@@ -19,6 +19,7 @@
 
 import generate_timeframe
 
+import adc_reader
 from scipy.io import wavfile
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,13 +30,14 @@ class TestGenerateTimeframe(unittest.TestCase):
   def setUp(self):
     self.frecuency = 25500
     self.w = 2*np.pi*self.frecuency
-    (self.sampling_rate, self.audio_data) = wavfile.read("test_data.wav")
+    reader = adc_reader.MockADCReader("test_adc.bin")
+    self.audio_data = reader.get_frame()
 
   def test_pll(self):
-    x = generate_timeframe.generate_timeframe(self.audio_data[:,1],
+    x = generate_timeframe.generate_timeframe(self.audio_data,
                                               self.w,
-                                              self.sampling_rate)
-    plt.plot(x, self.audio_data[:,1], '*-')
+                                              adc_reader.SAMPLING_RATE)
+    plt.plot(x, self.audio_data, '*-')
     plt.show()
 
 

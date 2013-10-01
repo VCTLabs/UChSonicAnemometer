@@ -21,6 +21,7 @@ import numpy as np
 import StringIO
 import tempfile
 
+SAMPLING_RATE = 1e6*15/16
 
 class ADCReader:
   """ Python interface to access the ADC."""

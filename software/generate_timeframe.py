@@ -28,23 +28,16 @@ def generate_timeframe(signal, angular_frecuency, sampling_rate):
   
   Signal must be composed of a number of pulses and noise.
   
-  The estimatiom of the starting point is done by detecting the phase of the
-  signal, and then finding the root using newton's method using the first
-  sample over a threshold as a starting guess."""
+  The estimatiom of the starting point is done by detecting the edge of the
+  driving signal."""
   
-  threshold = 5000
+  threshold = 2000
   start = 0
   for i in range(signal.size):
     if abs(signal[i]) > threshold:
-      start = i*1.0/sampling_rate
+      start = i*1.0
       break
-  phase = pll.pll(signal, angular_frecuency, sampling_rate)
   
-  def f(x):
-    return scipy.sin(angular_frecuency*x+phase)
-  def fprime(x):
-    return angular_frecuency*scipy.cos(angular_frecuency*x+phase)
-    
-  start = scipy.optimize.newton(f, start, fprime=fprime)
+  print start, sampling_rate
   
-  return np.arange(-start, -start+1.0*signal.size/sampling_rate, 1.0/sampling_rate)[0:signal.size]
+  return np.arange(-start/sampling_rate, (-start+signal.size)/sampling_rate, 1.0/sampling_rate)[0:signal.size]
