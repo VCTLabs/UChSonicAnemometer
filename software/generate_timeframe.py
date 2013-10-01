@@ -37,7 +37,4 @@ def generate_timeframe(signal, angular_frecuency, sampling_rate):
     if abs(signal[i]) > threshold:
       start = i*1.0
       break
-  
-  print start, sampling_rate
-  
   return np.arange(-start/sampling_rate, (-start+signal.size)/sampling_rate, 1.0/sampling_rate)[0:signal.size]
