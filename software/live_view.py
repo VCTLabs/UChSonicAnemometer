@@ -32,8 +32,10 @@ class AppForm(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowTitle('UChSonicAnemometer Live View')
-        
+
         self.autoscale = True
+        
+        self.reader = adc_reader.ADCReader()
 
         self.create_menu()
         self.create_main_frame()
@@ -61,8 +63,7 @@ class AppForm(QMainWindow):
         x_limits = self.axes.get_xlim()
         y_limits = self.axes.get_ylim()
         self.axes.clear()
-        reader = adc_reader.ADCReader()
-        signal = reader.get_frame()
+        signal = self.reader.get_frame()
         time = generate_timeframe.generate_timeframe(signal,
                                                      0,
                                                      adc_reader.SAMPLING_RATE)
@@ -72,64 +73,82 @@ class AppForm(QMainWindow):
           self.axes.set_ylim(y_limits)
         self.canvas.draw()
         self.autoscale = False
-    
+
+    def self_on_capture(self):
+      """ Callback for capture button. """
+      if self.recording_check.isChecked():
+  try:
+    os.mkdir("records")
+  except OSError:
+    pass
+  for i in range(self.recording_repetitions.value()):
+    filename = "records/%s_%04d.bin"%(self.recording_name.text(), i)
+          self.reader.dump_frame_to_file(filename)
+      self.on_draw()
+
     def create_main_frame(self):
         self.main_frame = QWidget()
-        
-        # Create the mpl Figure and FigCanvas objects. 
+
+        # Create the mpl Figure and FigCanvas objects.
         # 5x4 inches, 100 dots-per-inch
         #
         self.dpi = 100
         self.fig = Figure(dpi=self.dpi)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.main_frame)
-        
-        # Since we have only one plot, we can use add_axes 
+
+        # Since we have only one plot, we can use add_axes
         # instead of add_subplot, but then the subplot
         # configuration tool in the navigation toolbar wouldn't
         # work.
         #
         self.axes = self.fig.add_subplot(111)
-        
-        
+
         # Create the navigation toolbar, tied to the canvas
         #
         self.mpl_toolbar = NavigationToolbar(self.canvas, self.main_frame)
-        
+
         self.draw_button = QPushButton("&Capture")
-        self.connect(self.draw_button, SIGNAL('clicked()'), self.on_draw)
-        
+        self.connect(self.draw_button, SIGNAL('clicked()'), self.self_on_capture)
+s
+        self.recording_check = QCheckBox("Recording")
+        self.recording_name = QLineEdit()
+        self.recording_repetitions = QSpinBox()
+        self.recording_repetitions.setRange(1, 99);
+
         #
         # Layout with box sizers
-        # 
+        #
         hbox = QHBoxLayout()
-        
-        for w in [self.draw_button, ]:
+
+        for w in [self.draw_button, self.recording_check,
+                  QLabel("Recording Name: "), self.recording_name,
+                  QLabel("Repetitions: "), self.recording_repetitions]:
             hbox.addWidget(w)
             hbox.setAlignment(w, Qt.AlignVCenter)
-        
+
         vbox = QVBoxLayout()
         vbox.addWidget(self.canvas)
         vbox.addWidget(self.mpl_toolbar)
         vbox.addLayout(hbox)
-        
+
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)
-    
+
     def create_status_bar(self):
         self.status_text = QLabel("This is a demo")
         self.statusBar().addWidget(self.status_text, 1)
-        
-    def create_menu(self):        
+
+    def create_menu(self):
         self.file_menu = self.menuBar().addMenu("&File")
-        
+
         load_file_action = self.create_action("&Save plot",
-            shortcut="Ctrl+S", slot=self.save_plot, 
+            shortcut="Ctrl+S", slot=self.save_plot,
             tip="Save the plot")
-        quit_action = self.create_action("&Quit", slot=self.close, 
+        quit_action = self.create_action("&Quit", slot=self.close,
             shortcut="Ctrl+Q", tip="Close the application")
-        
-        self.add_actions(self.file_menu, 
+
+        self.add_actions(self.file_menu,
             (load_file_action, None, quit_action))
 
     def add_actions(self, target, actions):

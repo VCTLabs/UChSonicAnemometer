@@ -31,6 +31,13 @@ class ADCReader:
     process = subprocess.Popen("./adc/adc_read", stdout=subprocess.PIPE)
     process_output, process_error = process.communicate()
     return np.frombuffer(process_output, np.dtype(np.int16))
+    
+  def dump_frame_to_file(self, filename):
+    """ Reads one from the ADC but dumps the data to filename."""
+    process = subprocess.Popen("./adc/adc_read", stdout=subprocess.PIPE)
+    process_output, process_error = process.communicate()
+    output_file = open(filename, 'wb')
+    output_file.write(process_output)
 
 
 class MockADCReader:
@@ -41,3 +48,7 @@ class MockADCReader:
   def get_frame(self):
     return np.fromfile(open(self.data_file, 'rb'), np.dtype(np.int16))
     
+  def dump_frame_to_file(self, filename):
+    input_file = open(self.data_file, 'rb')
+    output_file = open(filename, 'wb')
+    output_file.write(input_file.read())
