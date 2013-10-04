@@ -77,12 +77,12 @@ class AppForm(QMainWindow):
     def self_on_capture(self):
       """ Callback for capture button. """
       if self.recording_check.isChecked():
-  try:
-    os.mkdir("records")
-  except OSError:
-    pass
-  for i in range(self.recording_repetitions.value()):
-    filename = "records/%s_%04d.bin"%(self.recording_name.text(), i)
+        try:
+          os.mkdir("records")
+        except OSError:
+          pass
+        for i in range(self.recording_repetitions.value()):
+          filename = "records/%s_%04d.bin"%(self.recording_name.text(), i)
           self.reader.dump_frame_to_file(filename)
       self.on_draw()
 
@@ -110,7 +110,7 @@ class AppForm(QMainWindow):
 
         self.draw_button = QPushButton("&Capture")
         self.connect(self.draw_button, SIGNAL('clicked()'), self.self_on_capture)
-s
+
         self.recording_check = QCheckBox("Recording")
         self.recording_name = QLineEdit()
         self.recording_repetitions = QSpinBox()
