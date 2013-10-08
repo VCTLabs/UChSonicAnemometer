@@ -29,3 +29,16 @@ class UniformSampledSignal:
 
   def get_timestamp_array(self):
     return np.array(range(self.values.size))/self.sampling_rate + self.start_timestamp
+
+
+def average(signals):
+  assert len(signals) > 0
+  result = UniformSampledSignal(None, signals[0].sampling_rate)
+  result.start_timestamp = signals[0].start_timestamp
+  values = list()
+  for signal in signals:
+    assert signal.start_timestamp == result.start_timestamp
+    assert signal.sampling_rate == result.sampling_rate
+    values.append(signal.values)
+  result.values = np.average(values, 0)
+  return result
