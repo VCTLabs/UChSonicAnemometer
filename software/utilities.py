@@ -37,8 +37,9 @@ def split_signal(signal):
     for j in range(frame.values.size):
       if abs(frame.values[j]) > threshold:
         start_of_response = j+EXCITATION_SAMPLES
-        frame.values = frame.values[start_of_response:].copy()
+        frame.values = frame.values[start_of_response:].astype(np.float32)
         frame.values.resize((SAMPLES_PER_DIRECTION, ))
+        frame.values *= 1.0/frame.values.max()
         frame.start_timestamp = (EXCITATION_SAMPLES+2.0)/frame.sampling_rate
         break
     responses[MEASURING_DIRECTIONS[i]] = frame
