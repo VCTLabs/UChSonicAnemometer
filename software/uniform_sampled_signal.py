@@ -24,5 +24,8 @@ class UniformSampledSignal:
     self.sampling_rate = sampling_rate
     self.start_timestamp = 0
 
+  def get_timestamp(self, index):
+    return 1.0*index/self.sampling_rate + self.start_timestamp
+
   def get_timestamp_array(self):
     return np.array(range(self.values.size))/self.sampling_rate + self.start_timestamp
