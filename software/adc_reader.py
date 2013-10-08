@@ -16,6 +16,7 @@
 #
 # Authors: Luis Alberto Herrera <herrera.luis.alberto@gmail.com>
 
+import uniform_sampled_signal
 import subprocess
 import numpy as np
 import StringIO
@@ -30,8 +31,9 @@ class ADCReader:
     of measurement in every direction."""
     process = subprocess.Popen("./adc/adc_read", stdout=subprocess.PIPE)
     process_output, process_error = process.communicate()
-    return np.frombuffer(process_output, np.dtype(np.int16))
-    
+    return uniform_sampled_signal.UniformSampledSignal(
+        np.frombuffer(process_output, np.dtype(np.int16)), SAMPLING_RATE)
+
   def dump_frame_to_file(self, filename):
     """ Reads one from the ADC but dumps the data to filename."""
     process = subprocess.Popen("./adc/adc_read", stdout=subprocess.PIPE)
@@ -46,8 +48,9 @@ class MockADCReader:
     self.data_file = filename
 
   def get_frame(self):
-    return np.fromfile(open(self.data_file, 'rb'), np.dtype(np.int16))
-    
+    return uniform_sampled_signal.UniformSampledSignal(
+        np.fromfile(open(self.data_file, 'rb'), np.dtype(np.int16)), SAMPLING_RATE)
+
   def dump_frame_to_file(self, filename):
     input_file = open(self.data_file, 'rb')
     output_file = open(filename, 'wb')

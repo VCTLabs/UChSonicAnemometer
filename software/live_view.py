@@ -23,6 +23,8 @@ from PyQt4.QtGui import *
 import adc_reader
 import generate_timeframe
 import matplotlib
+import uniform_sampled_signal
+import utilities
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.figure import Figure
@@ -34,7 +36,7 @@ class AppForm(QMainWindow):
         self.setWindowTitle('UChSonicAnemometer Live View')
 
         self.autoscale = True
-        
+
         self.reader = adc_reader.ADCReader()
 
         self.create_menu()
@@ -64,10 +66,9 @@ class AppForm(QMainWindow):
         y_limits = self.axes.get_ylim()
         self.axes.clear()
         signal = self.reader.get_frame()
-        time = generate_timeframe.generate_timeframe(signal,
-                                                     0,
-                                                     adc_reader.SAMPLING_RATE)
-        self.axes.plot(time, signal, '-')
+        responses = utilities.split_signal(signal)
+        self.axes.plot(responses["NORTH"].get_timestamp_array(),
+                       responses["NORTH"].values, '-')
         if not self.autoscale:
           self.axes.set_xlim(x_limits)
           self.axes.set_ylim(y_limits)
