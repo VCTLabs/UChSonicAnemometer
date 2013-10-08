@@ -44,3 +44,11 @@ def split_signal(signal):
         break
     responses[MEASURING_DIRECTIONS[i]] = frame
   return responses
+
+
+def plot_signal_list(signals, axes, string_format):
+  for signal in signals:
+    plot_signal(signal, axes, string_format)
+
+def plot_signal(signal, axes, string_format):
+  axes.plot(signal.get_timestamp_array(), signal.values, string_format)
