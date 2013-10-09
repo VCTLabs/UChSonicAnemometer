@@ -16,7 +16,9 @@
 #
 # Authors: Luis Alberto Herrera <herrera.luis.alberto@gmail.com>
 
+import nonuniform_sampled_signal
 import uniform_sampled_signal
+from scipy import signal as scipysignal
 import numpy as np
 
 MEASURING_DIRECTIONS = ["NORTH", ]
@@ -44,6 +46,12 @@ def split_signal(signal):
         break
     responses[MEASURING_DIRECTIONS[i]] = frame
   return responses
+
+
+def get_signal_envelope(signal):
+  envelope_indexes = scipysignal.find_peaks_cwt(signal.values, np.arange(1,10))
+  return nonuniform_sampled_signal.NonUniformSampledSignal(
+      signal.values[envelope_indexes], signal.get_timestamp_array()[envelope_indexes])
 
 
 def plot_signal_list(signals, axes, string_format):
