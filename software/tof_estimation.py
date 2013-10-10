@@ -18,8 +18,9 @@
 #          Luis Alberto Herrera <herrera.luis.alberto@gmail.com>
 
 import numpy as np
-from scipy import signal as scipysignal
 from scipy import optimize
+import utilities
+import uniform_sampled_signal
 
 class ToFEstimator:
   def estimate_tof(self, signals):
@@ -28,15 +29,21 @@ class ToFEstimator:
     pass
 
 class EnvelopeThresholdEstimator(ToFEstimator):
-  def estimate_tof(self, signals):
-    signal = signals[0]
-    for i in range(signal.values.size):
-      if signal.values[i] > 0.1:
+  thresholds_levels = [0.75, 0.8, 0.85]
+  def get_intersection(self, signal, level):
+    for i in range(1, signal.values.size):
+      if signal.values[i] > level:
         return signal.get_timestamp(i)
-    return 0
+    return -1
 
-def peak_detection(signal, window_length):
-  return scipysignal.find_peaks_cwt(signal, np.arange(1,window_length))
+  def estimate_tof(self, signals):
+    average = uniform_sampled_signal.average(signals)
+    envelope = utilities.get_signal_envelope(average)
+    thresholds = []
+    for thresholds_level in self.thresholds_levels:
+      thresholds.append(self.get_intersection(envelope, thresholds_level))
+    return (thresholds[0]+thresholds[1]+thresholds[2])/3
+
 
 def envelope_analytical_function(x, x0, V0, m, h):
   """ Parameters of the envelope as seen on the paper M. Parrilla et al.,
