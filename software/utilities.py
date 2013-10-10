@@ -34,7 +34,7 @@ def split_signal(signal):
     frame = uniform_sampled_signal.UniformSampledSignal(
         signal.values[i*SAMPLES_PER_DIRECTION:(i+1)*SAMPLES_PER_DIRECTION-1],
         signal.sampling_rate)
-    threshold = 2000
+    threshold = 1500
     start_of_response = 0
     for j in range(frame.values.size):
       if abs(frame.values[j]) > threshold:
@@ -49,9 +49,11 @@ def split_signal(signal):
 
 
 def get_signal_envelope(signal):
-  envelope_indexes = scipysignal.find_peaks_cwt(signal.values, np.arange(1,10))
-  return nonuniform_sampled_signal.NonUniformSampledSignal(
-      signal.values[envelope_indexes], signal.get_timestamp_array()[envelope_indexes])
+  envelope = np.abs(scipysignal.hilbert(signal.values))
+  result = uniform_sampled_signal.UniformSampledSignal(
+      envelope, signal.sampling_rate)
+  result.start_timestamp = signal.start_timestamp
+  return result
 
 
 def plot_signal_list(signals, axes, string_format):
