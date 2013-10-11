@@ -18,16 +18,17 @@
 
 
 import numpy as np
+from scipy import optimize
+import math
 
-def pll(signal, angular_frecuency, sample_rate):
+def sin_w(w):
+  def f(x, phi):
+    return -np.cos(x*w+phi)
+  return f
+
+#return optimize.curve_fit(func, x, y, p0)
+
+def pll(signal, angular_frecuency):
   """ Detects the phase of the signal using minimum square error."""
-  best_phase = 0
-  best_mse = float('inf')
-  x = np.arange(0, signal.size)/(1.0*sample_rate)
-  for phase in np.arange(0, 2*np.pi, 0.01):
-    difference = signal - np.sin(angular_frecuency*x+phase)
-    mse = np.sum(np.power(difference, 2))
-    if mse < best_mse:
-      best_mse = mse
-      best_phase = phase
-  return best_phase
+  popt, pcov = optimize.curve_fit(sin_w(angular_frecuency), signal.get_timestamp_array(), signal.values, 0)
+  return math.fmod(popt[0], np.pi)

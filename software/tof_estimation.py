@@ -21,6 +21,7 @@ import numpy as np
 from scipy import optimize
 import utilities
 import uniform_sampled_signal
+import pll
 
 class ToFEstimator:
   def estimate_tof(self, signals):
@@ -37,12 +38,26 @@ class EnvelopeThresholdEstimator(ToFEstimator):
     return -1
 
   def estimate_tof(self, signals):
+    # Average all the signals and calculate the envelope
     average = uniform_sampled_signal.average(signals)
     envelope = utilities.get_signal_envelope(average)
+    # Find the intesection of the signals with a certain level.
+    # To improve accuracy take tree slightly diffent levels and average.
     thresholds = []
     for thresholds_level in self.thresholds_levels:
       thresholds.append(self.get_intersection(envelope, thresholds_level))
-    return (thresholds[0]+thresholds[1]+thresholds[2])/3
+    coarse_tof = (thresholds[0]+thresholds[1]+thresholds[2])/3
+    # Using the information of the main frecuency in the response we now fit
+    # the coase stimation to fit the phase of this wave
+    f = 27100 # carrier frecuency in the response
+    w = 2*np.pi*f # associated angular frecuecy
+    T = 1.0/f # associated period
+    phase = pll.pll(average, w)
+    # get the number of the cycle that contains the coarse estimation
+    n_cycle = np.floor((coarse_tof+(phase+np.pi)/w)/T)
+    fine_tof = -phase/w+n_cycle*T
+    print "%e"%fine_tof
+    return fine_tof, phase
 
 
 def envelope_analytical_function(x, x0, V0, m, h):
